@@ -1,0 +1,44 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage[pdftex]{hyperref}
+
+%opening
+\title{Web Proxy}
+\author{Alisson Barbosa de Souza\\Antônio Sérgio de Sousa Vieira}
+
+\begin{document}
+\maketitle
+
+\hyphenation{pro-gra-ma-ção}
+
+\onehalfspace
+
+\section{Introdução}
+Um Proxy Web é um programa que atua como um intermediador entre um navegador Web e um servidor Web. Em vez de contactar um servidor Web diretamente para carregar uma página Web, o navegador se conecta a um proxy, que encaminha a requisição ao servidor Web. Quando o servidor Web responde ao proxy, este envia a resposta ao navegador.
+
+O proxy tem várias utilidades. Algumas vezes eles são utilizados em firewalls, já que ele é apenas uma forma do navegador passar pelo firewall para se conectar a um servidor do outro lado do firewall. O proxy também pode converter páginas, fazendo com que elas seja visíveis em telefones celulares, por exemplo. Eles também são utilizados para deixar a nevegação anônima ao retirar toda a informação de identificação da requisição do navegador. O proxy também pode ser utilizado para criar um \textit{cache} de objetos Web.
+
+Neste trabalho foi desenvolvido um proxy simples responsável por encaminhar requisições de clientes a servidores web e encaminhar as respostas dos servidores aos navegadores.
+
+\section{Funcionamento do Proxy}
+Basicamente, o funcionamento do proxy se dá inicialmente abrindo um socket e esperando por uma conexão de um cliente qualquer. Quando ele recebe a requisição do cliente, aceita a conexão, ler a requisição HTTP e extrai o nome do servidor. Ele deve então abrir uma conexão ao servidor final, enviar uma requisição, receber a resposta e encaminhá-la ao navegador, se a requisição não for bloqueada.
+
+\section{Requisições HTTP}
+Uma requisição HTTP pode ser de muitos tipos, porém, neste trabalho, a única requisição considerada foi a GET. Quando uma URL \tt{http://www.google.com/index.html} é digitada no navegador é aberta uma conexão TCP em \tt{www.google.com} na porta 80 e é enviada uma requisição:
+
+\begin{verbatim}
+ GET /index.html HTTP/1.1\r\n
+\end{verbatim}
+
+A sequência $\setminus r\setminus n$ representa o caractere ASCII 13 seguido do caractere ASCII 10. Em resposta, o servidor web localizará o arquivo chamado \tt{index.html} e transmitirá do conteúdo da página para o navegador.
+
+Um navegador Web pode ser configurado para utilizador um proxy web em vez de mandar uma requisição direta ao servidor Web. Suponha que um navegador esteja configurado para se comunicar com o proxy. Neste caso, quando quando tenta-se carregar a página \tt{http://www.google.com/index.html}, o navegar envia a seguinte mensagem:
+
+\begin{verbatim}
+ GET http://www.google.com/index.html HTTP/1.1\r\n
+\end{verbatim}
+
+\end{document}
