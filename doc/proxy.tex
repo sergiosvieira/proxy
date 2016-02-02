@@ -48,5 +48,75 @@ Um navegador Web pode ser configurado para utilizador um proxy web em vez de man
 para o proxy, onde ele encarrega-se de extrair o host e encaminhar a mensagem recebida para servidor Web. Após estabelecida a conexão entre o proxy e o servidor Web, o proxy encaminha a mensagem do navegar e aguarda a resposta do servidor, a medida que o proxy recebe estas mensagens ele as encaminha para o navegador.
 
 \section{Questões de implementação}
+Para que o proxy funcione corretamente é necessário criar subprocessos para que seja possível receber múltiplas requisições. A medida que o navegador recebe a página Web e verifica a existência de imagens e outros objetos, ele faz novas requisições, portanto, para que o proxy funcione corretamente ele deve lidar com múltiplas requisições. O comando {\tt fork()} é responsável por criar novos processos. Isto é verificado no trecho de código abaixo:
+
+\begin{verbatim}
+while (1) {
+
+  if ((sd_current = accept(sd, (struct sockaddr *) &pin, 
+    &addrlen)) == -1) {
+    error("Error on accept");
+  }
+
+  pid = fork();
+  if (pid < 0) {
+    error("Error on fork.");
+  }
+
+  printf("Client connection on %s:%d\n", 
+    inet_ntoa(pin.sin_addr), ntohs(
+    pin.sin_port));
+
+  if (pid == 0) {
+    close(sd);
+    /* get a message from the client */
+    while (recv(sd_current, buffer, sizeof(buffer), 0) > 0) {
+      proxy(buffer, sd_current);
+    }
+  } else {
+    close(sd_current);
+  }
+}
+\end{verbatim}
+
+Outra funcionalidade importante diz respeito ao encaminhamento das respostas para o navegador Web. Neste caso, para que o proxy funcione corretamente é necessário criar um novo processo para lidar com o envio das mensagens recebidas do servidor para o navegador. O trecho de código abaixo realiza esta operação:
+
+\begin{verbatim}
+while ((rc = recv(sd, buffer, sizeof(buffer), 0)) > 0) {
+  if (rc <= 0) {
+    if (rc == 0)
+      break;
+    if (errno == EINTR || errno == EAGAIN)
+      continue;
+    error("read error");
+  }
+  offset = 0;
+  amt = rc;
+  pid = fork();
+
+  if (pid < 0) {
+    error("Error on fork");
+  }
+
+  if (pid == 0) {
+    while (amt) {
+      rc = send(fd, buffer + offset, amt, 0);
+      if (rc < 0) {
+	if (errno == EINTR || errno == EAGAIN)
+	  continue;
+	error("write error");
+      }
+    offset += rc;
+    amt -= rc;
+    }
+  } else {
+    close(sd);
+  }
+}
+\end{verbatim}
+
+\section{Conclusão}
+Apesar de parecer simples o desenvolvimento de um proxy, algumas questões importantes devem ser observadas, principalmente aquelas relacionadas a criação de novos processos e a forma de como é realizado o encaminhando das respostas do servidor.
+
 
 \end{document}
