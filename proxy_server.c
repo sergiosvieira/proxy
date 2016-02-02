@@ -146,29 +146,6 @@ void proxy(const char* message, int fd) {
 	}
 }
 
-char* host2ip(const char* hostname) {
-	struct addrinfo hints, *res, *p;
-	char *ipstr = (char*) malloc(sizeof(char) * INET6_ADDRSTRLEN);
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-
-	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
-		error("Error on getaddrinfo");
-	}
-
-	p = res;
-	while (p != NULL) {
-		void *addr;
-		struct sockaddr_in *ipv4 = (struct soackaddr_in*) p->ai_addr;
-		addr = &(ipv4->sin_addr);
-		inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-	}
-
-	return ipstr;
-}
-
 int main() {
 	char buffer[4096];
 	int sd, sd_current, cc, fromlen, tolen;
@@ -212,8 +189,7 @@ int main() {
 			error("Error on fork.");
 		}
 
-		printf("Client connection on %s:%d\n", inet_ntoa(pin.sin_addr), ntohs(
-				pin.sin_port));
+		printf("Client connection on %s:%d\n", inet_ntoa(pin.sin_addr), ntohs(pin.sin_port));
 
 		if (pid == 0) {
 			close(sd);
